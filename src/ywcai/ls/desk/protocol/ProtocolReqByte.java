@@ -1,10 +1,10 @@
 package ywcai.ls.desk.protocol;
 
-public class ProtocolReq implements MesReqInf{
-
-	private String username,data;
+public class ProtocolReqByte implements MesReqInf{
 	private byte tag;
-	public ProtocolReq(byte ptag,String pUsername,String pData) {
+	private String username;
+	private byte[] data;
+	public ProtocolReqByte(byte ptag,String pUsername,byte[] pData) {
 		// TODO Auto-generated constructor stub
 		this.tag=ptag;
 		this.username=pUsername;
@@ -17,7 +17,7 @@ public class ProtocolReq implements MesReqInf{
 	}
 
 	@Override
-	public String getData() {
+	public byte[] getData() {
 		// TODO Auto-generated method stub
 		return data;
 	}
@@ -29,7 +29,7 @@ public class ProtocolReq implements MesReqInf{
 	@Override
 	public int getDataLenth() {
 		// TODO Auto-generated method stub
-		return data==null?0:data.getBytes().length;
+		return data==null?0:data.length;
 	}
 	@Override
 	public String getUserName() {

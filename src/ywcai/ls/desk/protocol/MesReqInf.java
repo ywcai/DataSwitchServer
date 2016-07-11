@@ -5,5 +5,5 @@ public interface MesReqInf {
 	public int getNameLenth();
 	public int getDataLenth();
 	public String getUserName();
-	public String getData();
+	public Object getData();
 }

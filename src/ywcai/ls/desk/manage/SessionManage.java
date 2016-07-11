@@ -5,78 +5,42 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.mina.core.session.IoSession;
 import ywcai.ls.desk.control.ControlServer;
-import ywcai.ls.desk.protocol.ProtocolReq;
+import ywcai.ls.desk.protocol.ProtocolReqString;
 
 public class SessionManage implements SessionManageInf {
 
 	public HashMap<String,List<IoSession>> sessionMap=null;
+	public HashMap<String , CurrentUser> userMap=null;
 	public SessionManage()
 	{
 		sessionMap=CoreMap.getSessionMap();
+		userMap=CoreMap.getUserMap();
 		System.out.println("会话管理模块启动");
 	}
-
-	@Override
-	public void addSession(String username, IoSession session) {
-		// TODO Auto-generated method stub
-		
-		if (!sessionMap.containsKey(username)) {
-			List<IoSession> list=new ArrayList<IoSession>();
-			list.add(session);
-			sessionMap.put(username, list);
-			ControlServer.logger.info("SessionManage.addSession({},{}) , put hashmap",username,session);
-		}
-		else
-		{
-			if(!getSessionList(username).contains(session))
-			{
-				getSessionList(username).add(session);
-				ControlServer.logger.info("SessionManage.addSession({},{}) , create new session" ,username,session);
-			}
-			else
-			{
-				//do nothing;
-				ControlServer.logger.info("SessionManage.addSession({},{}) , do nothing",username,session);
-			}
-		}
-		callBackLoginIn(username,session);
-		updateClientUI(username);
-	}
-	@Override
-	public void removeSession(String username, IoSession session) {
-		// TODO Auto-generated method stub
-		getSessionList(username).remove(session);
-		callBackLoginOut(username,session);		
-		if(getSessionList(username).isEmpty())
-		{
-			sessionMap.remove(username);	
-		}
-		else
-		{
-			updateClientUI(username);
-		}
-		ControlServer.logger.info("SessionManage.removeSession({},{})",username,session);
-	}
-
-	@Override
-	public List<IoSession> getSessionList(String username) {
-		// TODO Auto-generated method stub
-		List<IoSession> list=sessionMap.get(username);
-		return list;
-	}
-
-	private void callBackLoginIn(String username,IoSession ioSession)
+	
+	//don't has any session and not create hash map 
+	private boolean isNotLoginAny(String pUsername)
 	{
-		ProtocolReq result=new ProtocolReq((byte) 0x02,username,"login_ok");
-		ioSession.write(result);
+		boolean flag=!sessionMap.containsKey(pUsername);
+		return flag;
 	}
 	
-	private void callBackLoginOut(String username,IoSession ioSession)
+	//is this session login some time before
+	private boolean isExist(String pUsername,IoSession ioSession)
 	{
-		ProtocolReq result=new ProtocolReq((byte) 0x02,username,"out_ok");
+		boolean flag=getSessionList(pUsername).contains(ioSession);
+		return flag;
+	}
+	private void callBackLoginIn(String username,IoSession ioSession)
+	{
+		ProtocolReqString result=new ProtocolReqString((byte) 0x01,username,"login_ok");
 		ioSession.write(result);
 	}
-
+	private void callBackLoginOut(String username,IoSession ioSession)
+	{
+		ProtocolReqString result=new ProtocolReqString((byte) 0x02,username,"out_ok");
+		ioSession.write(result);
+	}
 	private void updateClientUI(String username)
 	{
 		List<IoSession> sessionList=getSessionList(username);
@@ -84,19 +48,74 @@ public class SessionManage implements SessionManageInf {
 		String data="";
 		for(int i=0;i<sessionCount;i++)
 		{
-				String  nickname=sessionList.get(i).getAttribute("nickname").toString();
-				String  ipaddr=sessionList.get(i).getRemoteAddress().toString();
-				data+=i+"|"+nickname+"|"+ipaddr;
-				if(i!=sessionCount-1)
-				{
-					data+=",";
-				}
+			String  nickname=sessionList.get(i).getAttribute("nickname").toString();
+			String  ipaddr=sessionList.get(i).getRemoteAddress().toString();
+			data+=i+"|"+nickname+"|"+ipaddr;
+			if(i!=sessionCount-1)
+			{
+				data+=",";
+			}
 		}
-		ProtocolReq result=new ProtocolReq((byte) 0x07,username,data);
+		ProtocolReqString result=new ProtocolReqString((byte) 0x07,username,data);
 		for(int i=0;i<sessionCount;i++)
 		{
 			sessionList.get(i).write(result);
 		}
 	}
+
+	@Override
+	public void addSession(String pUsername, IoSession session) {
+		// TODO Auto-generated method stub
+		List<IoSession> list=getSessionList(pUsername);
+		if(!isExist(pUsername,session))
+		{
+			list.add(session);
+			sessionMap.put(pUsername, list);
+			callBackLoginIn(pUsername,session);
+			updateClientUI(pUsername);
+			ControlServer.logger.info("SessionManage.addSession({},{}) , create a new session" ,pUsername,session);
+		}
+		else
+		{
+			//is exist , do nothing;
+			ControlServer.logger.info("SessionManage.addSession({},{}) , the session is exist , do nothing",pUsername,session);
+		}
+
+
+	}
+	@Override
+	public void removeSession(String pUsername, IoSession session) {
+		// TODO Auto-generated method stub
+		List<IoSession> list=getSessionList(pUsername);	
+		if(isExist(pUsername,session))
+		{
+			list.remove(session);
+			callBackLoginOut(pUsername,session);	
+			updateClientUI(pUsername);
+			ControlServer.logger.info("SessionManage.removeSession({},{})",pUsername,session);
+		}
+		else
+		{
+			//isn't exist , do nothing;
+			ControlServer.logger.info("SessionManage.removeSession({},{}) , the session isn't exist , do nothing",pUsername,session);
+		}
+
+	}
+
+	@Override
+	public List<IoSession> getSessionList(String pUsername) {
+		List<IoSession> list=null;
+		if(!isNotLoginAny(pUsername))
+		{
+			list=sessionMap.get(pUsername);
+		}
+		else 
+		{
+			list=new ArrayList<IoSession>();	
+		}
+		return list;
+	}
+
+
 
 }

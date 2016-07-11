@@ -14,9 +14,7 @@ import ywcai.ls.desk.core.DataProcessInf;
 import ywcai.ls.desk.manage.SessionManageInf;
 import ywcai.ls.desk.manage.UserManageInf;
 import ywcai.ls.desk.protocol.CodeFactory;
-import ywcai.ls.desk.protocol.MesDecode;
 import ywcai.ls.desk.protocol.MesEncode;
-import ywcai.ls.desk.protocol.ProtocolRes;
 
 public class WorkTcpServer  extends IoHandlerAdapter {
 	public int PORT=7772;
@@ -30,19 +28,16 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 		this.dataProcessInf=dataProcess;
 		NioSocketAcceptor acceptor = new NioSocketAcceptor(Runtime.getRuntime().availableProcessors()+1);
 		acceptor.setHandler(this);
-
-		acceptor.getFilterChain().addFirst("codec",
-				new ProtocolCodecFilter(new CodeFactory(
-						new MesDecode(Charset.forName("utf-8")),
-						new MesEncode(Charset.forName("utf-8"))
-						))
-				)
-		;
-		
+		acceptor.getSessionConfig().setReadBufferSize(2048);
+		acceptor.getFilterChain().addFirst
+		("codec",new ProtocolCodecFilter(new CodeFactory(new MesEncode(Charset.forName("utf-8")))));
 		acceptor.getFilterChain().addLast("ThreadPools",new ExecutorFilter(Executors.newCachedThreadPool()));
-		try {
+		try
+		{
 			acceptor.bind(new InetSocketAddress(PORT));
-		} catch (Exception e) {
+		} 
+		catch (Exception e) 
+		{
 
 		}
 		if(acceptor.isActive())
@@ -60,32 +55,27 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 	}
 	@Override
 	public void inputClosed(IoSession session) throws Exception {
-		// TODO Auto-generated method stub
 		super.inputClosed(session);
 	}
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		ProtocolRes protocolRes=(ProtocolRes)message;
-		System.out.println("from:"+session.getRemoteAddress()+ "  body: "  +protocolRes.getData());
-		dataProcessInf.Process(session, protocolRes,sessionManageInf,userManageInf);
+		super.messageReceived(session, message);
+		dataProcessInf.processReciveEvent(session, message,sessionManageInf,userManageInf);
 	}
 	@Override
 	public void messageSent(IoSession session, Object message) throws Exception {
 		super.messageSent(session, message);
-		//ProtocolReq protocolReq=(ProtocolReq)message;	
-		//System.out.println("to:"+session.getRemoteAddress()+ "  body: "  +protocolReq.getData());
+		dataProcessInf.processSentEvent(session, message,sessionManageInf,userManageInf);
 	}
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
-		System.out.println("close a session,id: "+session.getId());
-		String username=session.getAttribute("username").toString();
-		userManageInf.RemoveUser(username);
-		sessionManageInf.removeSession(username, session);
+		super.sessionClosed(session);
+		dataProcessInf.processCloseEvent(session, sessionManageInf, userManageInf);
 	}
 	@Override
 	public void sessionCreated(IoSession session) throws Exception {
-		System.out.println("create a session,id: "+session.getId());
 		super.sessionCreated(session);
+		System.out.println("create a session,remote ip: "+session.getRemoteAddress());
 	}
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
