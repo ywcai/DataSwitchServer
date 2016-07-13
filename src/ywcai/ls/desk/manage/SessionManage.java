@@ -35,11 +35,13 @@ public class SessionManage implements SessionManageInf {
 	{
 		ProtocolReqString result=new ProtocolReqString((byte) 0x01,username,"login_ok");
 		ioSession.write(result);
+
 	}
 	private void callBackLoginOut(String username,IoSession ioSession)
 	{
-		ProtocolReqString result=new ProtocolReqString((byte) 0x02,username,"out_ok");
+		ProtocolReqString result=new ProtocolReqString((byte) 0x02,username,"login_out_ok");
 		ioSession.write(result);
+		ioSession.closeNow();
 	}
 	private void updateClientUI(String username)
 	{
@@ -73,15 +75,14 @@ public class SessionManage implements SessionManageInf {
 			sessionMap.put(pUsername, list);
 			callBackLoginIn(pUsername,session);
 			updateClientUI(pUsername);
-			ControlServer.logger.info("SessionManage.addSession({},{}) , create a new session" ,pUsername,session);
+			ControlServer.logger.info("SessionManage.addSession({},{}) " ,pUsername,session);
 		}
 		else
 		{
 			//is exist , do nothing;
 			ControlServer.logger.info("SessionManage.addSession({},{}) , the session is exist , do nothing",pUsername,session);
 		}
-
-
+		
 	}
 	@Override
 	public void removeSession(String pUsername, IoSession session) {
@@ -92,14 +93,14 @@ public class SessionManage implements SessionManageInf {
 			list.remove(session);
 			callBackLoginOut(pUsername,session);	
 			updateClientUI(pUsername);
-			ControlServer.logger.info("SessionManage.removeSession({},{})",pUsername,session);
+			//ControlServer.logger.info("SessionManage.removeSession({},{})",pUsername,session);
 		}
 		else
 		{
 			//isn't exist , do nothing;
-			ControlServer.logger.info("SessionManage.removeSession({},{}) , the session isn't exist , do nothing",pUsername,session);
+			//ControlServer.logger.info("SessionManage.removeSession({},{}) , the session isn't exist , do nothing",pUsername,session);
 		}
-
+		
 	}
 
 	@Override
@@ -115,7 +116,4 @@ public class SessionManage implements SessionManageInf {
 		}
 		return list;
 	}
-
-
-
 }

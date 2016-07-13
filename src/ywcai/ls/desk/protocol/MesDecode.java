@@ -127,7 +127,6 @@ public class MesDecode implements MessageDecoder  {
 			mesRes.setDataLenth(datalenth);
 			mesRes.setUsername(username);
 			mesRes.setData(data);
-			System.out.println("recived img data  lenth is  : "+data.length);
 		}
 		else
 		{
@@ -138,7 +137,6 @@ public class MesDecode implements MessageDecoder  {
 			mesRes.setDataLenth(datalenth);
 			mesRes.setUsername(username);
 			mesRes.setData(mesString);
-			System.out.println("recived String is  : "+mesString);
 		}
 		out.write(mesRes);
 	

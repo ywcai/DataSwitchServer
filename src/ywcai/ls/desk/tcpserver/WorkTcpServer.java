@@ -69,13 +69,13 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 	}
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
-		super.sessionClosed(session);
+		super.sessionClosed(session);		
 		dataProcessInf.processCloseEvent(session, sessionManageInf, userManageInf);
 	}
 	@Override
 	public void sessionCreated(IoSession session) throws Exception {
 		super.sessionCreated(session);
-		System.out.println("create a session,remote ip: "+session.getRemoteAddress());
+
 	}
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
@@ -84,5 +84,6 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
 		super.sessionOpened(session);
+		System.out.println("session opened ! ip : "+session.getRemoteAddress());
 	}
 }

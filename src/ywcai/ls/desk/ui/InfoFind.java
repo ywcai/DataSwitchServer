@@ -1,10 +1,16 @@
 package ywcai.ls.desk.ui;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
+
+import org.apache.mina.core.session.IoSession;
+
+import ywcai.ls.desk.manage.CoreMap;
 
 public class InfoFind implements InfoInf {
 	public Scanner scanner;
-
+	public HashMap<String,List<IoSession>> sessionMap=CoreMap.getSessionMap();
 	public void Init()
 	{
 		System.out.println("信息查询模块启动");
@@ -16,7 +22,6 @@ public class InfoFind implements InfoInf {
 			ExecuteCmd(cmd);
 		}
 	}
-
 	@Override
 	public void ExecuteCmd(String cmd) {
 		// TODO Auto-generated method stub
@@ -48,8 +53,25 @@ public class InfoFind implements InfoInf {
 	@Override
 	public void SelectUsersInfo() {
 		// TODO Auto-generated method stub
-		System.out.println("Info:");
-		System.out.println("AllInfoLists");
+		if(sessionMap.get("ywcai")!=null)
+		{
+			if(sessionMap.get("ywcai").size()>0)
+			{
+				for(int i=0;i<sessionMap.get("ywcai").size();i++)
+				{
+					System.out.println("[NO:"+i+"] , "+sessionMap.get("ywcai").get(i).toString());
+				}	
+			}
+			else
+			{
+				System.out.println("session is null !");
+			}
+		}
+		else
+		{
+			System.out.println("map is null !");
+		}
+
 	}
 
 	@Override

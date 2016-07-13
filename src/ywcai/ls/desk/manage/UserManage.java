@@ -8,6 +8,7 @@ import ywcai.ls.desk.protocol.ProtocolReqString;
 
 public class UserManage implements UserManageInf {
 	public HashMap<String , CurrentUser> userMap=null;
+
 	public UserManage()
 	{
 		userMap=CoreMap.getUserMap();
@@ -48,9 +49,10 @@ public class UserManage implements UserManageInf {
 		}
 		else
 		{
+			MesReqInf toSrc=new ProtocolReqString((byte) 0x03, pUsername,"has_link");
+			master.write(toSrc);
 			//repeated create link . do nothing	
 			ControlServer.logger.info("UserManage.CreateUser({}) but the user is online , create fail",pUsername);
-
 		}
 	}
 	@Override
@@ -61,7 +63,7 @@ public class UserManage implements UserManageInf {
 			CurrentUser currentUser=CoreMap.getUserMap().get(pUsername);		
 			userMap.remove(pUsername);		
 			//return the remove success message to client
-			MesReqInf result=new ProtocolReqString((byte) 0x04, currentUser.userName,"your link is disconnected");
+			MesReqInf result=new ProtocolReqString((byte) 0x04, currentUser.userName,"disconnect_ok");
 			currentUser.masterSession.write(result);
 			currentUser.slaveSession.write(result);	
 			currentUser=null;
@@ -70,8 +72,9 @@ public class UserManage implements UserManageInf {
 		}
 		else
 		{
-			ControlServer.logger.info("UserManage.RemoveUser({}), has no current user .",pUsername);	
+			MesReqInf result=new ProtocolReqString((byte) 0x04,pUsername,"not_link");
+			ioSession.write(result);
+			ControlServer.logger.info("UserManage.RemoveUser({}), this sesion is not online.",pUsername);	
 		}
 	}
-
 }

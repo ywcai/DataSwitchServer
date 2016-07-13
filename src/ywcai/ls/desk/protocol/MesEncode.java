@@ -17,10 +17,12 @@ public class MesEncode implements MessageEncoder<MesReqInf>{
 	@Override
 	public void encode(IoSession ioSession, MesReqInf msg, ProtocolEncoderOutput out) throws Exception {
 		// TODO Auto-generated method stub
-		IoBuffer buf=IoBuffer.allocate(2048).setAutoExpand(true);
+
 		if(msg instanceof MesReqInf)
 		{
 			MesReqInf req= msg;
+			int bufSize=req.getDataLenth()+req.getNameLenth()+9;
+			IoBuffer buf=IoBuffer.allocate(bufSize).setAutoExpand(true);
 			buf.put(req.getTag());
 			buf.putInt(req.getNameLenth());
 			buf.putInt(req.getDataLenth());
@@ -33,13 +35,14 @@ public class MesEncode implements MessageEncoder<MesReqInf>{
 			{
 				buf.putString(req.getData().toString(),charset.newEncoder());
 			}
+			buf.flip();
+			out.write(buf);
 		}
 		else
 		{
 			System.out.println("传输数据协议不对");
 		}
-		out.write(buf);
-		buf.flip();
+
 	}
 
 }
