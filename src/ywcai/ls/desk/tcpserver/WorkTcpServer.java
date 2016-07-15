@@ -31,6 +31,7 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 		acceptor.getSessionConfig().setReadBufferSize(2048);
 		acceptor.getFilterChain().addFirst
 		("codec",new ProtocolCodecFilter(new CodeFactory(new MesEncode(Charset.forName("utf-8")))));
+		
 		acceptor.getFilterChain().addLast("ThreadPools",new ExecutorFilter(Executors.newCachedThreadPool()));
 		try
 		{

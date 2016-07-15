@@ -104,15 +104,21 @@ public class DataProcess implements DataProcessInf {
 	public void processSentEvent(IoSession session, Object message, SessionManageInf sessionManageInf,
 			UserManageInf userManageInf) {
 		// TODO Auto-generated method stub
-		//MesReqInf mesReq=(MesReqInf)message;	
-		//System.out.println("to:"+session.getRemoteAddress()+ "  body: "  +mesReq.getData());
+		MesReqInf mesReq=(MesReqInf)message;	
+		System.out.println("to:"+session.getRemoteAddress()+" lenth "+mesReq.getDataLenth()+"  body: "  +mesReq.getData());
 	}
 	@Override
 	public void processCloseEvent(IoSession session, SessionManageInf sessionManageInf,
 			UserManageInf userManageInf) {
-		String username=session.getAttribute("username").toString();
-		String nickname=session.getAttribute("nickname").toString();
-		String ipaddr=session.getRemoteAddress().toString();
+		String username="";
+		String nickname="";
+		String ipaddr="";
+		if(session!=null)
+		{
+		username=session.getAttribute("username").toString();
+		nickname=session.getAttribute("nickname").toString();
+		ipaddr=session.getRemoteAddress().toString();
+		}
 		ControlServer.logger.info("username: {} , nickname : {} , session closed ! ip is {} ",username,nickname,ipaddr);
 		System.out.println("username: "+username+" , nickname : "+nickname+" , session closed ! ip is "+ipaddr);
 		userManageInf.RemoveUser(username,session);

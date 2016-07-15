@@ -33,15 +33,29 @@ public class SessionManage implements SessionManageInf {
 	}
 	private void callBackLoginIn(String username,IoSession ioSession)
 	{
+		if(ioSession!=null)
+		{
 		ProtocolReqString result=new ProtocolReqString((byte) 0x01,username,"login_ok");
 		ioSession.write(result);
-
+		}
+		else
+		{
+		ControlServer.logger.info("callBackLoginOut() ,user: [ {} ] want write data to null session",username);
+		}
 	}
 	private void callBackLoginOut(String username,IoSession ioSession)
 	{
+
+		if(ioSession!=null)
+		{
 		ProtocolReqString result=new ProtocolReqString((byte) 0x02,username,"login_out_ok");
 		ioSession.write(result);
 		ioSession.closeNow();
+		}
+		else
+		{
+		ControlServer.logger.info("callBackLoginOut() ,user: [ {} ] want write data to null session",username);
+		}
 	}
 	private void updateClientUI(String username)
 	{
@@ -61,7 +75,10 @@ public class SessionManage implements SessionManageInf {
 		ProtocolReqString result=new ProtocolReqString((byte) 0x07,username,data);
 		for(int i=0;i<sessionCount;i++)
 		{
+			if(sessionList.get(i)!=null)
+			{
 			sessionList.get(i).write(result);
+			}
 		}
 	}
 
@@ -93,12 +110,12 @@ public class SessionManage implements SessionManageInf {
 			list.remove(session);
 			callBackLoginOut(pUsername,session);	
 			updateClientUI(pUsername);
-			//ControlServer.logger.info("SessionManage.removeSession({},{})",pUsername,session);
+			ControlServer.logger.info("SessionManage.removeSession({},{})",pUsername,session);
 		}
 		else
 		{
 			//isn't exist , do nothing;
-			//ControlServer.logger.info("SessionManage.removeSession({},{}) , the session isn't exist , do nothing",pUsername,session);
+			ControlServer.logger.info("SessionManage.removeSession({},{}) , the session isn't exist , do nothing",pUsername,session.toString());
 		}
 		
 	}

@@ -1,5 +1,7 @@
 package ywcai.ls.desk.protocol;
 
+import java.nio.charset.Charset;
+
 public class ProtocolReqString implements MesReqInf{
 	private byte tag;
 	private String username;
@@ -24,12 +26,12 @@ public class ProtocolReqString implements MesReqInf{
 	@Override
 	public int getNameLenth() {
 		// TODO Auto-generated method stub
-		return username==null?0:username.getBytes().length;
+		return username==null?0:username.getBytes(Charset.forName("utf-8")).length;
 	}
 	@Override
 	public int getDataLenth() {
 		// TODO Auto-generated method stub
-		return data==null?0:data.getBytes().length;
+		return data==null?0:data.getBytes(Charset.forName("utf-8")).length;
 	}
 	@Override
 	public String getUserName() {
