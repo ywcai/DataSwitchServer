@@ -28,7 +28,7 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 		this.dataProcessInf=dataProcess;
 		NioSocketAcceptor acceptor = new NioSocketAcceptor(Runtime.getRuntime().availableProcessors()+1);
 		acceptor.setHandler(this);
-		acceptor.getSessionConfig().setReadBufferSize(2048);
+		acceptor.getSessionConfig().setReadBufferSize(2048*64);
 		acceptor.getFilterChain().addFirst
 		("codec",new ProtocolCodecFilter(new CodeFactory(new MesEncode(Charset.forName("utf-8")))));
 		
@@ -52,7 +52,10 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 	}
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		super.exceptionCaught(session, cause);
+		//super.exceptionCaught(session, cause);
+		System.out.println("session is :"+session+", cause is : "+cause.getMessage());
+		dataProcessInf.processCloseEvent(session, sessionManageInf, userManageInf);
+		System.out.println("session is :"+session+", cause is : "+cause.getMessage());
 	}
 	@Override
 	public void inputClosed(IoSession session) throws Exception {

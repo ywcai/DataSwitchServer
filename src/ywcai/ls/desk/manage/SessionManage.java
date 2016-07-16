@@ -75,10 +75,7 @@ public class SessionManage implements SessionManageInf {
 		ProtocolReqString result=new ProtocolReqString((byte) 0x07,username,data);
 		for(int i=0;i<sessionCount;i++)
 		{
-			if(sessionList.get(i)!=null)
-			{
-			sessionList.get(i).write(result);
-			}
+			sessionList.get(i).write(result);	     
 		}
 	}
 

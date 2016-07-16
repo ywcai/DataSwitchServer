@@ -22,7 +22,7 @@ public class MesEncode implements MessageEncoder<MesReqInf>{
 		{
 			MesReqInf req= msg;
 			int bufSize=req.getDataLenth()+req.getNameLenth()+9;
-			IoBuffer buf=IoBuffer.allocate(bufSize).setAutoExpand(true);
+			IoBuffer buf=IoBuffer.allocate(bufSize);
 			buf.put(req.getTag());
 			buf.putInt(req.getNameLenth());
 			buf.putInt(req.getDataLenth());

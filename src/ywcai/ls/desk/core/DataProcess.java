@@ -113,11 +113,15 @@ public class DataProcess implements DataProcessInf {
 		String username="";
 		String nickname="";
 		String ipaddr="";
-		if(session!=null)
+		try
 		{
 		username=session.getAttribute("username").toString();
 		nickname=session.getAttribute("nickname").toString();
 		ipaddr=session.getRemoteAddress().toString();
+		}
+		catch(Exception e)
+		{
+			System.out.println("reading session has an err :"+e.toString());
 		}
 		ControlServer.logger.info("username: {} , nickname : {} , session closed ! ip is {} ",username,nickname,ipaddr);
 		System.out.println("username: "+username+" , nickname : "+nickname+" , session closed ! ip is "+ipaddr);
