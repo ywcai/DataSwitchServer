@@ -1,145 +1,112 @@
 package ywcai.ls.desk.protocol;
 
-import java.nio.charset.Charset;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.apache.mina.filter.codec.demux.MessageDecoder;
 import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 
+import ywcai.ls.desk.cfg.MyConfig;
+
 public class MesDecode implements MessageDecoder  {
-	public Charset charset;
-	private String username="";
-	private int namelenth=0;
 	public MesDecode() {
-		this.charset = Charset.forName("utf-8");
 	}
+	
 	@Override
 	public MessageDecoderResult decodable(IoSession ioSession, IoBuffer ioBuffer) {
-		// TODO Auto-generated method stub
-
-		if (ioBuffer.remaining()<9) 
+		// TODO Auto-generated method stub	
+		DecodeHelp dHelp=new DecodeHelp();
+		dHelp.init();
+		ioSession.setAttribute("dp",dHelp);
+		if (ioBuffer.remaining()<MyConfig.INT_PACKAGE_HEAD_LEN) 
 		{
 			System.out.println("数据接收不完整");
 			return MessageDecoderResult.NEED_DATA;
 		}	
-
 		byte tag = (byte)ioBuffer.get();
-		
 		//协助处理断包和粘包的变量
-		DecodeHelp dHelp=new DecodeHelp();
-		dHelp.data=null;
-		dHelp.dataLenth=0;
-		dHelp.dataPending=0;
-		dHelp.canDecode=true;
-		dHelp.tag=tag;
-		ioSession.setAttribute("dp",dHelp);
-		
-		if(tag==0x06) 
+		if(tag==MyConfig.PROTOCOL_HEAD_FLAG) 
 		{
-			//System.out.println("decode normal tag："+tag+"  the remining: "+ioBuffer.remaining()+" limit: "+ioBuffer.limit()+" cap: "+ioBuffer.capacity()+" pos:"+ioBuffer.position());
 			return MessageDecoderResult.OK;
 		}
-		if(tag==0x01||tag==0x02||tag==0x03||tag==0x04||tag==0x05||tag==0x07) 
-		{
-			//System.out.println("decode normal tag："+tag+"  the remining: "+ioBuffer.remaining()+" limit: "+ioBuffer.limit()+" cap: "+ioBuffer.capacity()+" pos:"+ioBuffer.position());
-			return MessageDecoderResult.OK;
-		}
-		System.out.println("decodable unknow tag："+tag+"  the remining: "+ioBuffer.remaining()+" limit: "+ioBuffer.limit()+" cap: "+ioBuffer.capacity()+" pos:"+ioBuffer.position());
+		System.out.println("decodable unknow tag："+tag+" from session : "+ioSession.getRemoteAddress().toString());
 		return MessageDecoderResult.NOT_OK;
 	}
 
 	@Override
 	public MessageDecoderResult decode(IoSession ioSession, IoBuffer ioBuffer, ProtocolDecoderOutput out) throws Exception {
 		// TODO Auto-generated method stub
-		DecodeHelp dHelp=(DecodeHelp)ioSession.getAttribute("dp");
-		
-		
-//		byte[] data=(byte[])ioSession.getAttribute("data");
-//		boolean newPackflag=(boolean)ioSession.getAttribute("newPackage");
-//		int datalenth=(int)ioSession.getAttribute("dataLenth");
-//		int dataPending=(int)ioSession.getAttribute("dataPending");
 
+		DecodeHelp dHelp=(DecodeHelp)ioSession.getAttribute("dp");
+	
 		while(ioBuffer.hasRemaining())
 		{
-			//System.out.println("hasRemaining :"+ioBuffer.remaining()+"id: "+ioSession.getId());
-			//如果是新包或粘包，则要解析包头。新包上面已经预处理，起始不存在这个问题
-			if(dHelp.canDecode)
+			//如果是新包或粘包，则要解析包头。
+			if(dHelp.isHead)
 			{
-				int nowPos=ioBuffer.position();
-				dHelp.tag=ioBuffer.get();				
-				//如果新包或粘包的标识位不是服务器协商允许的标识，直接返回notok，丢弃数据；
-				if(dHelp.tag>0x07||dHelp.tag<0x01)
+
+				if( ioBuffer.remaining()<(dHelp.needHeadLenth) )
 				{
-					return MessageDecoderResult.NOT_OK;
+					//System.out.println("处理包头不齐情况:"+dHelp.toString()+" remain:"+ioBuffer.remaining());	
+					//处理这些小字节数据
+					dHelp.needHeadLenth=dHelp.needHeadLenth-ioBuffer.remaining();		
+					ioBuffer.get(dHelp.head,dHelp.headPos,ioBuffer.remaining());			
+					dHelp.headPos=MyConfig.INT_PACKAGE_HEAD_LEN-dHelp.needHeadLenth;
+					//System.out.println("处理包头不齐情况:"+dHelp.toString()+" remain:"+ioBuffer.remaining());	
+					return MessageDecoderResult.NEED_DATA;
 				}
-				ioBuffer.position(nowPos+1);
-				namelenth=ioBuffer.getInt();
-				ioBuffer.position(nowPos+5);
-				dHelp.dataLenth=ioBuffer.getInt();
-				dHelp.dataPending=dHelp.dataLenth;
-				//ioSession.setAttribute("dataLenth",datalenth);
-				
-				ioBuffer.position(nowPos+9);
-				username=ioBuffer.getString(namelenth,charset.newDecoder());
-				ioBuffer.position(nowPos+9+namelenth);
-						
-				byte[] temp=new byte[dHelp.dataLenth];
-				dHelp.data=temp;				
+				/*
+				 * rebuild package head
+				*/
+				//System.out.println("解析包头:"+dHelp.toString()+" remain:"+ioBuffer.remaining());	
+				ioBuffer.get(dHelp.head,dHelp.headPos,dHelp.needHeadLenth);
+				dHelp.encodeHead();
 			}
+			
 
-			//如果需要接收的数据大于现在已有的数据，说明存在断包，需要继续接收数据，首先对本次数据进行缓存。
-			if(dHelp.dataPending>ioBuffer.remaining())
+			if(dHelp.needDataLenth>ioBuffer.remaining())
 			{
-				int getLenth=ioBuffer.remaining();
-				ioBuffer.get(dHelp.data,dHelp.dataLenth-dHelp.dataPending,ioBuffer.remaining());
+				dHelp.needDataLenth=dHelp.needDataLenth-ioBuffer.remaining();
+				ioBuffer.get(dHelp.data,dHelp.dataPos,ioBuffer.remaining());
+				dHelp.dataPos=dHelp.dataLenth-dHelp.needDataLenth;	
+				dHelp.isHead=false;
 
-				dHelp.dataPending=dHelp.dataPending-getLenth;
-
-				dHelp.canDecode=false;
-
-				//System.out.println("处理断包 ：remining: "+ioBuffer.remaining()+" datapending : "+dataPending+" postion :"+ioBuffer.position()+" datalenth :"+datalenth+" cap :"+ioBuffer.capacity()+" lim :"+ioBuffer.limit()) ;
 				return MessageDecoderResult.NEED_DATA;
 			}	
-			//如果需要接收的数据小于或者等于已接收到的数据，说明能组装成正常包。
-			else
+
+			if(dHelp.needDataLenth==ioBuffer.remaining())
 			{
-				int getLenth=dHelp.dataPending;
-				ioBuffer.get(dHelp.data,dHelp.dataLenth-dHelp.dataPending,getLenth);
-				dHelp.dataPending=dHelp.dataPending-getLenth;
-				putMessage(dHelp.tag,namelenth,dHelp.dataLenth,username,dHelp.data,out);
-				dHelp.canDecode=true;
+				ioBuffer.get(dHelp.data,dHelp.dataLenth-dHelp.needDataLenth,dHelp.needDataLenth);
+				putMessage(dHelp,out);
+				//返回OK后会自动重置DecodeHelp所有参数
+				//System.out.println("完整包 ：remining: "+ioBuffer.remaining()+" postion :"+ioBuffer.position()+" cap :"+ioBuffer.capacity()+" lim :"+ioBuffer.limit()) ;	
+				return MessageDecoderResult.OK;
 			}
-			//System.out.println("输出：tag："+tag+" remining: "+ioBuffer.remaining()+" limit: "+ioBuffer.limit()+" cap: "+ioBuffer.capacity()+" pos:"+ioBuffer.position());
-		}	
+
+			if(dHelp.needDataLenth<ioBuffer.remaining())
+			{
+				ioBuffer.get(dHelp.data,dHelp.dataLenth-dHelp.needDataLenth,dHelp.needDataLenth);
+				putMessage(dHelp,out);
+				dHelp.isHead=true;
+			}
+		}
 		return MessageDecoderResult.OK;
 	}
 
-	private void putMessage(byte tag,int namelenth,int datalenth,String username,byte[] data,ProtocolDecoderOutput out)
+	private void putMessage(DecodeHelp dHelp,ProtocolDecoderOutput out)
 	{		
 		//解码
 		MesResInf mesRes;
-		if(tag==0x06)
+		
+		if(dHelp.dataType==MyConfig.PROTOCOL_HEAD_TYPE_IMG)
 		{
-			mesRes=new ProtocolResByte();
-			mesRes.setTag(tag);
-			mesRes.setUsernameLenth(namelenth);
-			mesRes.setDataLenth(datalenth);
-			mesRes.setUsername(username);
-			mesRes.setData(data);
+			mesRes=new ProtocolResByte(dHelp);	
 		}
 		else
 		{
-			String mesString=new String(data,charset);
-			mesRes=new ProtocolResString();
-			mesRes.setTag(tag);
-			mesRes.setUsernameLenth(namelenth);
-			mesRes.setDataLenth(datalenth);
-			mesRes.setUsername(username);
-			mesRes.setData(mesString);
+			mesRes=new ProtocolResString(dHelp);
 		}
 		out.write(mesRes);
-	
 	}
 
 	@Override

@@ -40,7 +40,7 @@ public class SessionManage implements SessionManageInf {
 		}
 		else
 		{
-		ControlServer.logger.info("callBackLoginOut() ,user: [ {} ] want write data to null session",username);
+		//ControlServer.logger.info("callBackLoginOut() ,user: [ {} ] want write data to null session",username);
 		}
 	}
 	private void callBackLoginOut(String username,IoSession ioSession)
@@ -54,7 +54,7 @@ public class SessionManage implements SessionManageInf {
 		}
 		else
 		{
-		ControlServer.logger.info("callBackLoginOut() ,user: [ {} ] want write data to null session",username);
+		//ControlServer.logger.info("callBackLoginOut() ,user: [ {} ] want write data to null session",username);
 		}
 	}
 	private void updateClientUI(String username)
@@ -94,7 +94,7 @@ public class SessionManage implements SessionManageInf {
 		else
 		{
 			//is exist , do nothing;
-			ControlServer.logger.info("SessionManage.addSession({},{}) , the session is exist , do nothing",pUsername,session);
+			//ControlServer.logger.info("SessionManage.addSession({},{}) , the session is exist , do nothing",pUsername,session);
 		}
 		
 	}
@@ -112,7 +112,7 @@ public class SessionManage implements SessionManageInf {
 		else
 		{
 			//isn't exist , do nothing;
-			ControlServer.logger.info("SessionManage.removeSession({},{}) , the session isn't exist , do nothing",pUsername,session.toString());
+			//ControlServer.logger.info("SessionManage.removeSession({},{}) , the session isn't exist , do nothing",pUsername,session.toString());
 		}
 		
 	}

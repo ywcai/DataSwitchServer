@@ -3,7 +3,7 @@ package ywcai.ls.desk.core;
 
 import org.apache.mina.core.session.IoSession;
 
-import ywcai.ls.desk.control.ControlServer;
+import ywcai.ls.desk.cfg.MyConfig;
 import ywcai.ls.desk.manage.CoreMap;
 import ywcai.ls.desk.manage.SessionManageInf;
 import ywcai.ls.desk.manage.UserManageInf;
@@ -21,36 +21,35 @@ public class DataProcess implements DataProcessInf {
 	//登录成功
 	private void loginIn(MesResInf mesRes, SessionManageInf sessionManageInf, IoSession session) {
 		// TODO Auto-generated method stub
-		session.setAttribute("username", mesRes.getUsername());
+		session.setAttribute("token", mesRes.getToken());
 		session.setAttribute("nickname", mesRes.getData());
-		sessionManageInf.addSession(mesRes.getUsername(), session);
+		sessionManageInf.addSession(mesRes.getToken(), session);
 
 	}
 	private void loginOut(MesResInf mesRes, SessionManageInf sessionManageInf, IoSession session) {
 		// TODO Auto-generated method stub
-		sessionManageInf.removeSession(mesRes.getUsername(), session);
+		sessionManageInf.removeSession(mesRes.getToken(), session);
 	}
 
 
 	private void createLink(MesResInf mesRes, UserManageInf userManageInf, IoSession session) {
-		String userName=mesRes.getUsername();
+		String token=mesRes.getToken();
 		IoSession master=session;
 		//data has the remote session's index
-		IoSession slave=CoreMap.getSessionMap().get(mesRes.getUsername()).get(Integer.parseInt((String)mesRes.getData()));
-
-		userManageInf.CreateUser(userName,master,slave);
+		IoSession slave=CoreMap.getSessionMap().get(mesRes.getToken()).get(Integer.parseInt((String)mesRes.getData()));
+		userManageInf.CreateUser(token,master,slave);
 	}
 	private void shutDownLink(MesResInf mesRes, UserManageInf userManageInf,IoSession session) {
 		// TODO Auto-generated method stub
-		userManageInf.RemoveUser(mesRes.getUsername(),session);
+		userManageInf.RemoveUser(mesRes.getToken(),session);
 	}
 	private void sendCMD(MesResInf mesRes) {
 		// TODO Auto-generated method stub
 		//直接转发数据t
-		String userName = mesRes.getUsername();
+		String token = mesRes.getToken();
 		String data =(String)mesRes.getData();
-		MesReqInf mesReq=new ProtocolReqString((byte)0x05, userName, data);
-		IoSession toSession=CoreMap.getUserMap().get(userName).slaveSession;
+		MesReqInf mesReq=new ProtocolReqString((byte)0x05, token, data);
+		IoSession toSession=CoreMap.getUserMap().get(token).slaveSession;
 		synchronized (toSession) {
 			toSession.write(mesReq);
 		}
@@ -60,10 +59,10 @@ public class DataProcess implements DataProcessInf {
 	private void sendDesk(MesResInf mesRes) {
 		// TODO Auto-generated method stub
 		//直接转发数据
-		String currentUsername = mesRes.getUsername();
+		String token = mesRes.getToken();
 		byte[] data =(byte[])mesRes.getData();
-		MesReqInf mesReq=new ProtocolReqByte((byte)0x06, currentUsername, data);
-		IoSession toSession=CoreMap.getUserMap().get(currentUsername).masterSession;
+		MesReqInf mesReq=new ProtocolReqByte((byte)0x06, token, data);
+		IoSession toSession=CoreMap.getUserMap().get(token).masterSession;
 		synchronized(toSession)
 		{
 			toSession.write(mesReq);
@@ -73,28 +72,31 @@ public class DataProcess implements DataProcessInf {
 	public void processReciveEvent(IoSession session, Object message, SessionManageInf sessionManageInf,
 			UserManageInf userManageInf) {
 		MesResInf mesRes=(MesResInf)message;
-		byte tag=mesRes.getTag();
-		switch (tag) {
-		case 0x01://login
+		byte reqType=mesRes.getReqType();
+		switch (reqType) {
+		case MyConfig.REQ_TYPE_USER_LOGIN_IN://login
 			loginIn(mesRes,sessionManageInf,session);
 			break;
-		case 0x02://out
+		case MyConfig.REQ_TYPE_USER_LOGIN_OUT://out
 			loginOut(mesRes,sessionManageInf,session);
 			break;
-		case 0x03://create connect
+		case MyConfig.REQ_TYPE_DESK_LINK_OPEN://create connect
 			createLink(mesRes, userManageInf,session);
 			break;
-		case 0x04://disconnect
+		case MyConfig.REQ_TYPE_DESK_SHOWDOWN://disconnect
 			shutDownLink(mesRes, userManageInf,session);
 			break;
-		case 0x05://send CMD
+		case MyConfig.REQ_TYPE_CONTROL_CMD://send CMD
 			sendCMD(mesRes);
 			break;
-		case 0x06://send desk data
+		case MyConfig.REQ_TYPE_DESKTOP_SWITCH://send desk data
 			sendDesk(mesRes);
 			break;
+		case MyConfig.REQ_TYPE_CLIENT_LIST_UPDATE://send desk data
+			//更新UI，由服务端下发指令，服务端不处理
+			break;
 		default:
-			//System.out.println("unknow tag："+tag);
+			System.out.println("unknow reqType："+reqType);
 		}
 
 		//System.out.println("from:"+session.getRemoteAddress()+ "  body: "  +mesRes.getData());
@@ -104,29 +106,22 @@ public class DataProcess implements DataProcessInf {
 	public void processSentEvent(IoSession session, Object message, SessionManageInf sessionManageInf,
 			UserManageInf userManageInf) {
 		// TODO Auto-generated method stub
-		MesReqInf mesReq=(MesReqInf)message;	
-		System.out.println("to:"+session.getRemoteAddress()+" lenth "+mesReq.getDataLenth()+"  body: "  +mesReq.getData());
+		//MesReqInf mesReq=(MesReqInf)message;	
+		//System.out.println("to:"+session.getRemoteAddress()+" lenth "+mesReq.getDataLenth()+"  body: "  +mesReq.getData());
 	}
 	@Override
 	public void processCloseEvent(IoSession session, SessionManageInf sessionManageInf,
 			UserManageInf userManageInf) {
-		String username="";
-		String nickname="";
-		String ipaddr="";
+		String token="";
 		try
 		{
-		username=session.getAttribute("username").toString();
-		nickname=session.getAttribute("nickname").toString();
-		ipaddr=session.getRemoteAddress().toString();
+			token=session.getAttribute("token").toString();
 		}
 		catch(Exception e)
 		{
-			System.out.println("reading session has an err :"+e.toString());
+			System.out.println("Close Event , reading the close session has an err :"+e.toString());
 		}
-		ControlServer.logger.info("username: {} , nickname : {} , session closed ! ip is {} ",username,nickname,ipaddr);
-		System.out.println("username: "+username+" , nickname : "+nickname+" , session closed ! ip is "+ipaddr);
-		userManageInf.RemoveUser(username,session);
-		sessionManageInf.removeSession(username, session);
+		userManageInf.RemoveUser(token,session);
+		sessionManageInf.removeSession(token, session);
 	}
-
 }

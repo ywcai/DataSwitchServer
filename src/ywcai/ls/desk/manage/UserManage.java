@@ -52,7 +52,7 @@ public class UserManage implements UserManageInf {
 			MesReqInf toSrc=new ProtocolReqString((byte) 0x03, pUsername,"has_link");
 			master.write(toSrc);
 			//repeated create link . do nothing	
-			ControlServer.logger.info("UserManage.CreateUser({}) but the user is online , create fail",pUsername);
+			//ControlServer.logger.info("UserManage.CreateUser({}) but the user is online , create fail",pUsername);
 		}
 	}
 	@Override
@@ -74,7 +74,7 @@ public class UserManage implements UserManageInf {
 		{
 			MesReqInf result=new ProtocolReqString((byte) 0x04,pUsername,"not_link");
 			ioSession.write(result);
-			ControlServer.logger.info("UserManage.RemoveUser({}), this sesion is not online.",pUsername);	
+			//ControlServer.logger.info("UserManage.RemoveUser({}), this sesion is not online.",pUsername);	
 		}
 	}
 }

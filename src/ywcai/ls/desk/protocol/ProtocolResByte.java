@@ -1,49 +1,43 @@
 package ywcai.ls.desk.protocol;
 
 public class ProtocolResByte implements MesResInf {
-	private byte tag;
-	private int usernameLenth;
+	private byte dataType,reqType;
 	private int dataLenth;
-	private String username;
+	private String token;
 	private byte[] data;
+	public ProtocolResByte(DecodeHelp dHelp) {
+		// TODO Auto-generated constructor stub
+		this.dataType=dHelp.dataType;
+		this.reqType=dHelp.reqType;
+		this.dataLenth=dHelp.dataLenth;
+		this.token=dHelp.token;
+		this.data=dHelp.data;
+	}
+	
 	@Override
-	public byte getTag() {
-		return tag;
+	public byte getReqType() {
+		// TODO Auto-generated method stub
+		return reqType;
 	}
 	@Override
-	public void setTag(byte tag) {
-		this.tag = tag;
-	}
-	@Override
-    public int getUsernameLenth() {
-		return usernameLenth;
-	}
-	@Override
-	public void setUsernameLenth(int usernameLenth) {
-		this.usernameLenth = usernameLenth;
+	public byte getDataType() {
+		// TODO Auto-generated method stub
+		return dataType;
 	}
 	@Override
 	public int getDataLenth() {
+		// TODO Auto-generated method stub
 		return dataLenth;
 	}
 	@Override
-	public void setDataLenth(int dataLenth) {
-		this.dataLenth = dataLenth;
+	public String getToken() {
+		// TODO Auto-generated method stub
+		return token;
 	}
 	@Override
-	public String getUsername() {
-		return username;
-	}
-	@Override
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	@Override
-	public byte[] getData() {
+	public Object getData() {
+		// TODO Auto-generated method stub
 		return data;
 	}
-	@Override
-	public void setData(Object data) {
-		this.data = (byte[])data;
-	}
+
 }

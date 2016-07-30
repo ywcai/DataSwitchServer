@@ -10,6 +10,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
+import ywcai.ls.desk.cfg.MyConfig;
 import ywcai.ls.desk.core.DataProcessInf;
 import ywcai.ls.desk.manage.SessionManageInf;
 import ywcai.ls.desk.manage.UserManageInf;
@@ -17,7 +18,8 @@ import ywcai.ls.desk.protocol.CodeFactory;
 import ywcai.ls.desk.protocol.MesEncode;
 
 public class WorkTcpServer  extends IoHandlerAdapter {
-	public int PORT=7772;
+	private int PORT=MyConfig.INT_SERVER_PORT;
+	private int bufferSize=MyConfig.INT_READ_BUFFERSIZE;
 	private DataProcessInf dataProcessInf;
 	private SessionManageInf sessionManageInf;
 	private UserManageInf userManageInf;
@@ -28,7 +30,7 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 		this.dataProcessInf=dataProcess;
 		NioSocketAcceptor acceptor = new NioSocketAcceptor(Runtime.getRuntime().availableProcessors()+1);
 		acceptor.setHandler(this);
-		acceptor.getSessionConfig().setReadBufferSize(2048*64);
+		acceptor.getSessionConfig().setReceiveBufferSize(bufferSize);
 		acceptor.getFilterChain().addFirst
 		("codec",new ProtocolCodecFilter(new CodeFactory(new MesEncode(Charset.forName("utf-8")))));
 		
@@ -52,10 +54,10 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 	}
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		//super.exceptionCaught(session, cause);
-		System.out.println("session is :"+session+", cause is : "+cause.getMessage());
+		super.exceptionCaught(session, cause);
+		//System.out.println("session :"+session+", cause : "+cause.toString());
 		dataProcessInf.processCloseEvent(session, sessionManageInf, userManageInf);
-		System.out.println("session is :"+session+", cause is : "+cause.getMessage());
+		//System.out.println("session :"+session+", cause : "+cause.getMessage());
 	}
 	@Override
 	public void inputClosed(IoSession session) throws Exception {

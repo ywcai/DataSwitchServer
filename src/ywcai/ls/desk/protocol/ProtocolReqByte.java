@@ -1,39 +1,50 @@
 package ywcai.ls.desk.protocol;
 
-public class ProtocolReqByte implements MesReqInf{
-	private byte tag;
-	private String username;
-	private byte[] data;
-	public ProtocolReqByte(byte ptag,String pUsername,byte[] pData) {
-		// TODO Auto-generated constructor stub
-		this.tag=ptag;
-		this.username=pUsername;
-		this.data=pData;
-	}
-	@Override
-	public byte getTag() {
-		// TODO Auto-generated method stub
-		return tag;
-	}
+import ywcai.ls.desk.cfg.MyConfig;
 
+public class ProtocolReqByte implements MesReqInf{
+	private byte dataType,reqType;
+	private int dataLenth;
+	private String token;
+	private byte[] data;
+	public ProtocolReqByte(byte pReqType,String pToken,byte[] pData) {
+		// TODO Auto-generated constructor stub
+		this.dataType=(byte)MyConfig.PROTOCOL_HEAD_TYPE_IMG;
+		this.reqType=pReqType;
+		this.dataLenth=pData.length;
+		this.token=pToken;
+		this.data=pData;
+	
+	}
+	
 	@Override
-	public byte[] getData() {
+	public byte getReqType() {
 		// TODO Auto-generated method stub
-		return data;
+		return reqType;
 	}
 	@Override
-	public int getNameLenth() {
+	public byte getDataType() {
 		// TODO Auto-generated method stub
-		return username==null?0:username.getBytes().length;
+		return dataType;
 	}
 	@Override
 	public int getDataLenth() {
 		// TODO Auto-generated method stub
-		return data==null?0:data.length;
+		return dataLenth;
 	}
 	@Override
-	public String getUserName() {
+	public String getToken() {
 		// TODO Auto-generated method stub
-		return username;
+		return token;
 	}
+	@Override
+	public Object getData() {
+		// TODO Auto-generated method stub
+		return data;
+	}
+	
+	
+	
+	
+	
 }

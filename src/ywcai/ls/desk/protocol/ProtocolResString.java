@@ -1,52 +1,50 @@
 package ywcai.ls.desk.protocol;
 
-public class ProtocolResString implements MesResInf {
-	private byte tag;
-	private int usernameLenth;
-	private int dataLenth;
-	private String username;
-	private String data;
-	
-	@Override
-	public byte getTag() {
-		return tag;
-	}
-	@Override
-	public void setTag(byte tag) {
-		this.tag = tag;
-	}
+import java.io.UnsupportedEncodingException;
 
+public class ProtocolResString implements MesResInf {
+	private byte dataType,reqType;
+	private int dataLenth;
+	private String token;
+	private String data;
+	public ProtocolResString(DecodeHelp dHelp) {
+		// TODO Auto-generated constructor stub
+		this.dataType=dHelp.dataType;
+		this.reqType=dHelp.reqType;
+		this.dataLenth=dHelp.dataLenth;
+		this.token=dHelp.token;
+		try {
+			this.data = new String(dHelp.data,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			this.data="data decode err";
+		}
+	}
 	
 	@Override
-    public int getUsernameLenth() {
-		return usernameLenth;
+	public byte getReqType() {
+		// TODO Auto-generated method stub
+		return reqType;
 	}
 	@Override
-	public void setUsernameLenth(int usernameLenth) {
-		this.usernameLenth = usernameLenth;
+	public byte getDataType() {
+		// TODO Auto-generated method stub
+		return dataType;
 	}
 	@Override
 	public int getDataLenth() {
+		// TODO Auto-generated method stub
 		return dataLenth;
 	}
 	@Override
-	public void setDataLenth(int dataLenth) {
-		this.dataLenth = dataLenth;
+	public String getToken() {
+		// TODO Auto-generated method stub
+		return token;
 	}
 	@Override
-	public String getUsername() {
-		return username;
-	}
-	@Override
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	@Override
-	public String getData() {
+	public Object getData() {
+		// TODO Auto-generated method stub
 		return data;
-	}
-	@Override
-	public void setData(Object data) {
-		this.data =(String)data;
 	}
 }
