@@ -5,6 +5,7 @@ import org.apache.mina.core.session.IoSession;
 
 import ywcai.ls.desk.cfg.MyConfig;
 import ywcai.ls.desk.manage.CoreMap;
+import ywcai.ls.desk.manage.SessionAssist;
 import ywcai.ls.desk.manage.SessionManageInf;
 import ywcai.ls.desk.manage.UserManageInf;
 import ywcai.ls.desk.protocol.MesReqInf;
@@ -21,22 +22,34 @@ public class DataProcess implements DataProcessInf {
 	//µÇÂ¼³É¹¦
 	private void loginIn(MesResInf mesRes, SessionManageInf sessionManageInf, IoSession session) {
 		// TODO Auto-generated method stub
-		session.setAttribute("token", mesRes.getToken());
-		session.setAttribute("nickname", mesRes.getData());
-		sessionManageInf.addSession(mesRes.getToken(), session);
+		SessionAssist sAssist=new SessionAssist();
+		sAssist.token=mesRes.getToken();
+		sAssist.isNormalClose=true;
+		sAssist.isConn=false;
+		sAssist.nickname=mesRes.getData().toString().split(",")[0];
+		sAssist.isCtrl=false;
+		sAssist.remoteIp=session.getRemoteAddress().toString();
+		sAssist.tempID=session.getId();
+		sAssist.dreviceType=Integer.parseInt(mesRes.getData().toString().split(",")[1]);
+		//sAssist.username=tokenHashMap.getkey(token);
+		session.setAttribute("sa",sAssist);
+		sessionManageInf.addSession(sAssist, session);
 
 	}
 	private void loginOut(MesResInf mesRes, SessionManageInf sessionManageInf, IoSession session) {
 		// TODO Auto-generated method stub
-		sessionManageInf.removeSession(mesRes.getToken(), session);
+		SessionAssist sAssist=(SessionAssist)session.getAttribute("sa");
+		sessionManageInf.removeSession(sAssist, session);
 	}
 
 
 	private void createLink(MesResInf mesRes, UserManageInf userManageInf, IoSession session) {
+
 		String token=mesRes.getToken();
 		IoSession master=session;
+		int sessionIndex=Integer.parseInt((String)mesRes.getData());
 		//data has the remote session's index
-		IoSession slave=CoreMap.getSessionMap().get(mesRes.getToken()).get(Integer.parseInt((String)mesRes.getData()));
+		IoSession slave=CoreMap.getSessionMap().get(mesRes.getToken()).get(sessionIndex);
 		userManageInf.CreateUser(token,master,slave);
 	}
 	private void shutDownLink(MesResInf mesRes, UserManageInf userManageInf,IoSession session) {
@@ -85,6 +98,7 @@ public class DataProcess implements DataProcessInf {
 			break;
 		case MyConfig.REQ_TYPE_DESK_SHOWDOWN://disconnect
 			shutDownLink(mesRes, userManageInf,session);
+			System.out.println(mesRes.getData().toString());
 			break;
 		case MyConfig.REQ_TYPE_CONTROL_CMD://send CMD
 			sendCMD(mesRes);
@@ -112,16 +126,17 @@ public class DataProcess implements DataProcessInf {
 	@Override
 	public void processCloseEvent(IoSession session, SessionManageInf sessionManageInf,
 			UserManageInf userManageInf) {
-		String token="";
+		SessionAssist sAssist=null;
 		try
 		{
-			token=session.getAttribute("token").toString();
+			sAssist=(SessionAssist)session.getAttribute("sa");
+			sAssist.isNormalClose=true;
 		}
 		catch(Exception e)
 		{
 			System.out.println("Close Event , reading the close session has an err :"+e.toString());
 		}
-		userManageInf.RemoveUser(token,session);
-		sessionManageInf.removeSession(token, session);
+		System.out.println("session closed : token is "+sAssist.token+ ", ip is "+sAssist.remoteIp  + " remote ip is "+ session.getRemoteAddress());
+		sessionManageInf.removeSession(sAssist, session);
 	}
 }

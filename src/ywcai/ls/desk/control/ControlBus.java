@@ -32,9 +32,10 @@ public class ControlBus {
 		AuthenTcpServer authenTcpServer =new AuthenTcpServer();
 		authenTcpServer.Init(accountManageInf);
 		
-		//如果创建用户成功，则对在线的session进行管理。也可在核心数据处理时进行初始化，则在dataProcess实例里实例化。
-		SessionManageInf sessionManageInf=new SessionManage();
 		UserManageInf userManageInf=new UserManage();
+		//如果创建用户成功，则对在线的session进行管理。也可在核心数据处理时进行初始化，则在dataProcess实例里实例化。
+		SessionManageInf sessionManageInf=new SessionManage(userManageInf);
+
 		
 		//核心数据处理模块
 		DataProcessInf dataProcessInf=new DataProcess();

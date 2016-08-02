@@ -18,6 +18,8 @@ public class MyConfig {
 	public static final int REQ_TYPE_CONTROL_CMD=0x05;
 	public static final int REQ_TYPE_DESKTOP_SWITCH=0x06;
 	public static final int REQ_TYPE_CLIENT_LIST_UPDATE=0x07;
+//	public static final int REQ_TYPE_CLIENT_STATUS_USED=0x08;
+//	public static final int REQ_TYPE_CLIENT_STATUS_NO=0x09;
 
 	public static final int PROTOCOL_HEAD_RESERVE=0x7F;//‘§¡ÙŒª ÷µ
 

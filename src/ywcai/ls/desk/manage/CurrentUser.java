@@ -8,12 +8,14 @@ import org.apache.mina.core.session.IoSession;
 
 public class CurrentUser {
 	public Date onLineStart;
-	public String userName;
+	//public String userName;
+	public String token;
 	public IoSession masterSession,slaveSession;
-	public CurrentUser(String pUsername,IoSession master,IoSession slave)
+	public CurrentUser(String pToken,IoSession master,IoSession slave)
 	{
 		this.onLineStart=new Date();
-		this.userName=pUsername;
+		//this.userName=pUsername;
+		this.token=pToken;
 		this.masterSession=master;
 		this.slaveSession=slave;
 	}

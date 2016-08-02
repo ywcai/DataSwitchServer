@@ -55,9 +55,7 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		super.exceptionCaught(session, cause);
-		//System.out.println("session :"+session+", cause : "+cause.toString());
 		dataProcessInf.processCloseEvent(session, sessionManageInf, userManageInf);
-		//System.out.println("session :"+session+", cause : "+cause.getMessage());
 	}
 	@Override
 	public void inputClosed(IoSession session) throws Exception {
