@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.mina.core.session.IoSession;
 
+import ywcai.ls.desk.cfg.MyConfig;
 import ywcai.ls.desk.control.ControlServer;
 import ywcai.ls.desk.protocol.ProtocolReqString;
 
@@ -37,9 +38,10 @@ public class SessionManage implements SessionManageInf {
 	}
 	private void callBackLoginIn(SessionAssist sAssist,IoSession ioSession)
 	{
+		sAssist.isConn=true;
 		List<IoSession> sessionList=getSessionList(sAssist.token);
 		int sessionCount=sessionList.size();
-		String data="login_ok#";
+		String data=MyConfig.STR_LOGIN_RESULT_OK+"#";
 		for (int i=0;i<sessionCount;i++) 
 		{
 			SessionAssist sAssist2=(SessionAssist)sessionList.get(i).getAttribute("sa");
@@ -51,7 +53,7 @@ public class SessionManage implements SessionManageInf {
 		}
 		if(sAssist.isConn&&ioSession.getRemoteAddress()!=null)
 		{
-			ProtocolReqString result=new ProtocolReqString((byte) 0x01,sAssist.token,data);
+			ProtocolReqString result=new ProtocolReqString((byte) MyConfig.REQ_TYPE_USER_LOGIN_IN,sAssist.token,data);
 			ioSession.write(result);
 		}
 		else
@@ -62,28 +64,33 @@ public class SessionManage implements SessionManageInf {
 	private void callBackLoginOut(SessionAssist sAssist,IoSession ioSession)
 	{
 
-		if(ioSession.getRemoteAddress()!=null)
+		if(ioSession.getRemoteAddress()!=null&&sAssist.isConn!=false)
 		{
-			ProtocolReqString result=new ProtocolReqString((byte) 0x02,sAssist.token,"login_out_ok");
+			ProtocolReqString result=new ProtocolReqString((byte) MyConfig.REQ_TYPE_USER_LOGIN_OUT,sAssist.token,MyConfig.STR_OUT_RESULT_OK);
 			ioSession.write(result);
+			//System.out.println("服务器向客户端回执了关闭连接的请求 ： "+sAssist.token+ " , session : "+ ioSession);
+			
 		}
 		else
 		{
+			//System.out.println("服务器试图向客户端回执关闭连接的请求，但该连接已经丢失 ： "+sAssist.token+ " , session : "+ ioSession);
 			//ControlServer.logger.info("callBackLoginOut() ,user: [ {} ] want write data to null session",username);
 		}
+		sAssist.isConn=false;
+
 	}
+	
 	private void updateClientUI(SessionAssist sAssist,IoSession session)
 	{			
 		String content=sAssist.nickname+","+sAssist.remoteIp+","+sAssist.isConn+","+sAssist.isCtrl+","+sAssist.dreviceType+","+sAssist.tempID;
 		List<IoSession> sessionList=getSessionList(sAssist.token);
-		int sessionCount=sessionList.size();
-		ProtocolReqString result=new ProtocolReqString((byte) 0x07,sAssist.token,content);
-		for(int i=0;i<sessionCount;i++)
+		ProtocolReqString result=new ProtocolReqString((byte) MyConfig.REQ_TYPE_CLIENT_LIST_UPDATE,sAssist.token,content);
+		for (IoSession ioSession : sessionList) 
 		{
-			SessionAssist sa = (SessionAssist)sessionList.get(i).getAttribute("sa");
+			SessionAssist sa= (SessionAssist)ioSession.getAttribute("sa");
 			if(sa.isConn)
 			{
-				sessionList.get(i).write(result);	    
+				ioSession.write(result);	 
 			}
 		}
 	}
@@ -93,11 +100,22 @@ public class SessionManage implements SessionManageInf {
 		// TODO Auto-generated method stub
 		List<IoSession> list=getSessionList(sAssist.token);
 		//checkToken(),校验令牌，成功执行否则直接关闭socket，等待补充完整校验方法
+		//checkNickname();
+//		for (IoSession ioSession : list) {
+//			SessionAssist sa= (SessionAssist)ioSession.getAttribute("sa");
+//			if(sa.nickname.equals(sAssist.nickname))
+//			{
+//				ProtocolReqString result=new ProtocolReqString((byte) MyConfig.REQ_TYPE_USER_LOGIN_OUT,sAssist.token,MyConfig.STR_OUT_RESULT_OK);
+//				ioSession.write(result);
+//				return;
+//			}
+//		}
+		
+		
 		if(!sAssist.isConn)
 		{
 			list.add(session);
 			sessionMap.put(sAssist.token, list);
-			sAssist.isConn=true;
 			callBackLoginIn(sAssist,session);
 			updateClientUI(sAssist,session);
 			ControlServer.logger.info("SessionManage.addSession({},{}) " ,sAssist.token,session);
@@ -114,15 +132,12 @@ public class SessionManage implements SessionManageInf {
 		// TODO Auto-generated method stub
 		if(sAssist.isCtrl)
 		{
-			userManage.RemoveUser(sAssist.token, session);
-			sAssist.isCtrl=false;
+			userManage.RemoveUser(sAssist, session);
 		}
 		List<IoSession> list=getSessionList(sAssist.token);	
 		if(isExist(sAssist.token,session))
 		{
-			//System.out.println("remove session "+sAssist.token+" , session : "+session);
 			list.remove(session);
-			sAssist.isConn=false;
 			if(sAssist.isNormalClose)
 			{
 				callBackLoginOut(sAssist,session);	
@@ -132,10 +147,10 @@ public class SessionManage implements SessionManageInf {
 		}
 		else
 		{
-			System.out.println("异常关闭 ： closed envet . token : "+sAssist.token+" , ip : "+sAssist.remoteIp + " , session ip : "+session.getRemoteAddress());
 			//isn't exist , do nothing;
 			//ControlServer.logger.info("SessionManage.removeSession({},{}) , the session isn't exist , do nothing",pUsername,session.toString());
 		}
+		//System.out.println("连接关闭成功  ： token : "+sAssist.token+" , ip : "+sAssist.remoteIp + " , session ip : "+session.getRemoteAddress());
 
 	}
 

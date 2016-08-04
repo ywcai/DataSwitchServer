@@ -53,13 +53,13 @@ public class InfoFind implements InfoInf {
 	@Override
 	public void SelectUsersInfo() {
 		// TODO Auto-generated method stub
-		if(sessionMap.get("ywcai")!=null)
+		if(sessionMap.get("ywcai12345678900")!=null)
 		{
-			if(sessionMap.get("ywcai").size()>0)
+			if(sessionMap.get("ywcai12345678900").size()>0)
 			{
-				for(int i=0;i<sessionMap.get("ywcai").size();i++)
+				for(int i=0;i<sessionMap.get("ywcai12345678900").size();i++)
 				{
-					System.out.println("[NO:"+i+"] , "+sessionMap.get("ywcai").get(i).toString());
+					System.out.println("[NO:"+i+"] , "+sessionMap.get("ywcai12345678900").get(i).toString());
 				}	
 			}
 			else

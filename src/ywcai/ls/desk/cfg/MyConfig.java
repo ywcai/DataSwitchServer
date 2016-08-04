@@ -18,8 +18,8 @@ public class MyConfig {
 	public static final int REQ_TYPE_CONTROL_CMD=0x05;
 	public static final int REQ_TYPE_DESKTOP_SWITCH=0x06;
 	public static final int REQ_TYPE_CLIENT_LIST_UPDATE=0x07;
-//	public static final int REQ_TYPE_CLIENT_STATUS_USED=0x08;
-//	public static final int REQ_TYPE_CLIENT_STATUS_NO=0x09;
+	//public static final int REQ_TYPE_CLIENT_STATUS_TURNON=0x08;
+	//public static final int REQ_TYPE_CLIENT_STATUS_TURNOFF=0x09;
 
 	public static final int PROTOCOL_HEAD_RESERVE=0x7F;//‘§¡ÙŒª ÷µ
 
@@ -37,4 +37,18 @@ public class MyConfig {
 	//socket≈‰÷√
 	public static final int INT_SERVER_PORT=7772;
 	public static final int INT_READ_BUFFERSIZE=4096;
+	
+	
+    public static final String STR_LOGIN_RESULT_OK = "login_ok";
+    public static final String STR_OUT_RESULT_OK = "login_out_ok";
+    public static final String STR_OPEN_DESK_MASTER = "master";
+    public static final String STR_OPEN_DESK_SLAVE = "slave";
+    public static final String STR_OPEN_DESK_FAIL = "has_a_link"; 
+    public static final String STR_OPEN_DESK_FAIL1 = "not_link_self"; 
+    
+    public static final String STR_SHUTDOWN_DESK_FAIL = "has_no_link";
+    public static final String STR_SHUTDOWN_DESK_OK = "disconnect_ok";
+    
+    
+    
 }

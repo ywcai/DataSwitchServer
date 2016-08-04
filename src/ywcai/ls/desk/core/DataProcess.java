@@ -4,6 +4,7 @@ package ywcai.ls.desk.core;
 import org.apache.mina.core.session.IoSession;
 
 import ywcai.ls.desk.cfg.MyConfig;
+import ywcai.ls.desk.control.ControlServer;
 import ywcai.ls.desk.manage.CoreMap;
 import ywcai.ls.desk.manage.SessionAssist;
 import ywcai.ls.desk.manage.SessionManageInf;
@@ -47,27 +48,53 @@ public class DataProcess implements DataProcessInf {
 
 		String token=mesRes.getToken();
 		IoSession master=session;
-		int sessionIndex=Integer.parseInt((String)mesRes.getData());
+		long sessionID=Integer.parseInt((String)mesRes.getData());
+		boolean flag=false;
+		for (IoSession ioSession : CoreMap.getSessionMap().get(token)) 
+		{
+			if(ioSession.getId()==sessionID)
+			{
+				IoSession slave=ioSession;
+				//System.out.println("Find the slave session is : " + slave);	
+				userManageInf.CreateUser(token,master,slave);
+				flag=true;
+				return ;
+			}	
+		}
+		if(!flag)
+		{
+			System.out.println("客户端请求向一个空连接发起远程控制，客服端 ，session is : " + session);	
+			ControlServer.logger.info("客户端请求向一个空连接发起远程控制，客服端 ，session is : " + session);
+		}
 		//data has the remote session's index
-		IoSession slave=CoreMap.getSessionMap().get(mesRes.getToken()).get(sessionIndex);
-		userManageInf.CreateUser(token,master,slave);
+		//IoSession slave=CoreMap.getSessionMap().get(mesRes.getToken()).get(sessionIndex);
+		//userManageInf.CreateUser(token,master,slave);
 	}
 	private void shutDownLink(MesResInf mesRes, UserManageInf userManageInf,IoSession session) {
 		// TODO Auto-generated method stub
-		userManageInf.RemoveUser(mesRes.getToken(),session);
+		SessionAssist sAssist=null;
+		try
+		{
+			sAssist=(SessionAssist)session.getAttribute("sa");
+		}
+		catch(Exception e)
+		{
+			System.out.println("Close Event , reading the close session has an err :"+e.toString());
+		}
+		userManageInf.RemoveUser(sAssist,session);
 	}
-	private void sendCMD(MesResInf mesRes) {
+	private void sendCMD(MesResInf mesRes) 
+	{
 		// TODO Auto-generated method stub
 		//直接转发数据t
 		String token = mesRes.getToken();
 		String data =(String)mesRes.getData();
 		MesReqInf mesReq=new ProtocolReqString((byte)0x05, token, data);
 		IoSession toSession=CoreMap.getUserMap().get(token).slaveSession;
-		synchronized (toSession) {
+		synchronized (toSession)
+		{
 			toSession.write(mesReq);
 		}
-
-
 	}
 	private void sendDesk(MesResInf mesRes) {
 		// TODO Auto-generated method stub
@@ -130,13 +157,15 @@ public class DataProcess implements DataProcessInf {
 		try
 		{
 			sAssist=(SessionAssist)session.getAttribute("sa");
-			sAssist.isNormalClose=true;
+			sAssist.isNormalClose=false;
+			sAssist.isConn=false;
 		}
 		catch(Exception e)
 		{
 			System.out.println("Close Event , reading the close session has an err :"+e.toString());
 		}
-		System.out.println("session closed : token is "+sAssist.token+ ", ip is "+sAssist.remoteIp  + " remote ip is "+ session.getRemoteAddress());
+		System.out.println("Session closed : "+sAssist.toString());
+		//System.out.println("Session closed : token is "+sAssist.token+ ", ip is "+sAssist.remoteIp  + " remote ip is "+ session.getRemoteAddress());
 		sessionManageInf.removeSession(sAssist, session);
 	}
 }
