@@ -125,7 +125,7 @@ public class DataProcess implements DataProcessInf {
 			break;
 		case MyConfig.REQ_TYPE_DESK_SHOWDOWN://disconnect
 			shutDownLink(mesRes, userManageInf,session);
-			System.out.println(mesRes.getData().toString());
+			//System.out.println(mesRes.getData().toString());
 			break;
 		case MyConfig.REQ_TYPE_CONTROL_CMD://send CMD
 			sendCMD(mesRes);

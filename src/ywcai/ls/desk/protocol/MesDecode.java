@@ -20,7 +20,7 @@ public class MesDecode implements MessageDecoder  {
 		ioSession.setAttribute("dp",dHelp);
 		if (ioBuffer.remaining()<MyConfig.INT_PACKAGE_HEAD_LEN) 
 		{
-			System.out.println("数据接收不完整");
+			System.out.println("need more data");
 			return MessageDecoderResult.NEED_DATA;
 		}	
 		byte tag = (byte)ioBuffer.get();
