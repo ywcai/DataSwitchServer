@@ -1,6 +1,5 @@
 package ywcai.ls.desk.tcpserver;
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.util.concurrent.Executors;
 
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -12,27 +11,27 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 import ywcai.ls.desk.cfg.MyConfig;
 import ywcai.ls.desk.core.DataProcessInf;
+import ywcai.ls.desk.manage.LinkManageInf;
 import ywcai.ls.desk.manage.SessionManageInf;
-import ywcai.ls.desk.manage.UserManageInf;
-import ywcai.ls.desk.protocol.CodeFactory;
-import ywcai.ls.desk.protocol.MesEncode;
+import ywcai.ls.desk.newpro.CodeFactory;
+
 
 public class WorkTcpServer  extends IoHandlerAdapter {
 	private int PORT=MyConfig.INT_SERVER_PORT;
 	private int bufferSize=MyConfig.INT_READ_BUFFERSIZE;
 	private DataProcessInf dataProcessInf;
 	private SessionManageInf sessionManageInf;
-	private UserManageInf userManageInf;
-	public void Init(SessionManageInf sessionManage, UserManageInf userManage, DataProcessInf dataProcess)
+	private LinkManageInf linkManageInf;
+	public void Init(SessionManageInf sessionManage, LinkManageInf linkManager, DataProcessInf dataProcess)
 	{
 		this.sessionManageInf=sessionManage;
-		this.userManageInf=userManage;
+		this.linkManageInf=linkManager;
 		this.dataProcessInf=dataProcess;
 		NioSocketAcceptor acceptor = new NioSocketAcceptor(Runtime.getRuntime().availableProcessors()+1);
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setReceiveBufferSize(bufferSize);
 		acceptor.getFilterChain().addFirst
-		("codec",new ProtocolCodecFilter(new CodeFactory(new MesEncode(Charset.forName("utf-8")))));
+		("codec",new ProtocolCodecFilter(new CodeFactory()));
 		
 		acceptor.getFilterChain().addLast("ThreadPools",new ExecutorFilter(Executors.newCachedThreadPool()));
 		try
@@ -64,17 +63,17 @@ public class WorkTcpServer  extends IoHandlerAdapter {
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		super.messageReceived(session, message);
-		dataProcessInf.processReciveEvent(session, message,sessionManageInf,userManageInf);
+		dataProcessInf.processReciveEvent(session, message,sessionManageInf,linkManageInf);
 	}
 	@Override
 	public void messageSent(IoSession session, Object message) throws Exception {
 		super.messageSent(session, message);
-		dataProcessInf.processSentEvent(session, message,sessionManageInf,userManageInf);
+		dataProcessInf.processSentEvent(session, message,sessionManageInf,linkManageInf);
 	}
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
 		super.sessionClosed(session);		
-		dataProcessInf.processCloseEvent(session, sessionManageInf, userManageInf);
+		dataProcessInf.processCloseEvent(session, sessionManageInf, linkManageInf);
 	}
 	@Override
 	public void sessionCreated(IoSession session) throws Exception {

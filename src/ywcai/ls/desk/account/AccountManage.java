@@ -10,8 +10,8 @@ public class AccountManage implements AccountManageInf {
 	private HashMap<String,String> tokenMap;
 	public AccountManage()
 	{
-		tokenMap=CoreMap.getTokenMap();//后期利用Redis进行内存存储
-		System.out.println("账号验证模块启动");
+//		tokenMap=CoreMap.getTokenMap();//后期利用Redis进行内存存储
+//		System.out.println("账号验证模块启动");
 	}
 	@Override
 	public void Login(IoSession session, String message) {

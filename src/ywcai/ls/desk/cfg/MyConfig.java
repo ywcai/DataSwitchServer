@@ -33,6 +33,8 @@ public class MyConfig {
 	public static final int PROTOCOL_HEAD_POS_DATALEN = 20;
 	public static final int PROTOCOL_HEAD_POS_RESERVE = 24;//‘§¡ÙŒª
 	public static final int PROTOCOL_HEAD_SIZE_RESERVE = 4;//‘§¡ÙŒª
+	
+
 
 	//socket≈‰÷√
 	public static final int INT_SERVER_PORT=7772;
@@ -45,10 +47,22 @@ public class MyConfig {
     public static final String STR_OPEN_DESK_SLAVE = "slave";
     public static final String STR_OPEN_DESK_FAIL = "has_a_link"; 
     public static final String STR_OPEN_DESK_FAIL1 = "not_link_self"; 
-    
     public static final String STR_SHUTDOWN_DESK_FAIL = "has_no_link";
     public static final String STR_SHUTDOWN_DESK_OK = "disconnect_ok";
     
     
+    public static final  int INT_SOCKET_PORT=7772;
+    public static final  int INT_SOCKET_HEAD_LEN=21;
+    public static final  int INT_PROTOCOL_HEAD_FLAG=0x01;
+    public static final  int INT_SOCKET_TOKEN_POS=1;
+    public static final  int INT_SOCKET_LENTH_POS=17;
+    public static final  byte[] BYTES_PROTOCOL_HEAD_TOKEN={0x3a,0x3b,0x3c,0x3d,0x4a,0x4b,0x4c,0x4d,0x5a,0x5b,0x5c,0x5d,0x6a,0x6b,0x6c,0x6d};
+    public static final  byte byte_data_flag_json=  (byte) 0xcf;
+    public static final  byte byte_data_flag_byte=  (byte) 0xdf;
+    
+    
+    public static final String json_key_type="type";
+    public static final String json_key_content="content";
+
     
 }

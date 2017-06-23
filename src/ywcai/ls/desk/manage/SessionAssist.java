@@ -1,18 +1,18 @@
 package ywcai.ls.desk.manage;
 
+import ywcai.ls.desk.core.DeviceInfo;
+
 public class SessionAssist {
-	public String token;
-	public boolean isCtrl,isConn;
-	public String remoteIp;
-	public String nickname;
-	public int dreviceType;
-	public long tempID;
-	public boolean isNormalClose;
+	public String openID;
+//	public boolean isCtrl,isConn;
+	public String deviceIP;
+	public DeviceInfo deviceInfo;
+	public long linkID;
+//	public boolean isNormalClose;
 	@Override
 	public String toString() {
-		return "SessionAssist [token=" + token + ", isCtrl=" + isCtrl + ", isConn=" + isConn + ", remoteIp=" + remoteIp
-				+ ", nickname=" + nickname + ", dreviceType=" + dreviceType + ", tempID=" + tempID + ", isNormalClose="
-				+ isNormalClose + "]";
+		return "SessionAssist [openID=" + openID + ", deviceIP=" + deviceIP
+				+ ", deviceInfo=" + deviceInfo + ", linkID=" + linkID + "]";
 	}
-	
+
 }

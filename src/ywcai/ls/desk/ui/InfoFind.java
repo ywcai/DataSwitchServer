@@ -10,7 +10,7 @@ import ywcai.ls.desk.manage.CoreMap;
 
 public class InfoFind implements InfoInf {
 	public Scanner scanner;
-	public HashMap<String,List<IoSession>> sessionMap=CoreMap.getSessionMap();
+//	public HashMap<String,List<IoSession>> sessionMap=CoreMap.getSessionMap();
 	public void Init()
 	{
 		System.out.println("信息查询模块启动");
@@ -53,24 +53,24 @@ public class InfoFind implements InfoInf {
 	@Override
 	public void SelectUsersInfo() {
 		// TODO Auto-generated method stub
-		if(sessionMap.get("ywcai12345678900")!=null)
-		{
-			if(sessionMap.get("ywcai12345678900").size()>0)
-			{
-				for(int i=0;i<sessionMap.get("ywcai12345678900").size();i++)
-				{
-					System.out.println("[NO:"+i+"] , "+sessionMap.get("ywcai12345678900").get(i).toString());
-				}	
-			}
-			else
-			{
-				System.out.println("session is null !");
-			}
-		}
-		else
-		{
-			System.out.println("map is null !");
-		}
+//		if(sessionMap.get("ywcai12345678900")!=null)
+//		{
+//			if(sessionMap.get("ywcai12345678900").size()>0)
+//			{
+//				for(int i=0;i<sessionMap.get("ywcai12345678900").size();i++)
+//				{
+//					System.out.println("[NO:"+i+"] , "+sessionMap.get("ywcai12345678900").get(i).toString());
+//				}	
+//			}
+//			else
+//			{
+//				System.out.println("session is null !");
+//			}
+//		}
+//		else
+//		{
+//			System.out.println("map is null !");
+//		}
 
 	}
 
